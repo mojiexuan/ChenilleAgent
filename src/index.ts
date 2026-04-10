@@ -1,3 +1,3 @@
-import { greeting } from './constants';
+import { greeting } from "@/constants";
 
 console.info(greeting);

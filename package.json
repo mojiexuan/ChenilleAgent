@@ -10,7 +10,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
-  "author": "",
+  "author": "陈佳宝 <mail@chenjiabao.com>",
   "license": "ISC",
   "packageManager": "pnpm@10.27.0",
   "devDependencies": {
