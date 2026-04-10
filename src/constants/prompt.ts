@@ -1,9 +1,6 @@
 import { config } from "@/config";
 import { RISK_INSTRUCTION } from "./riskInstruction";
-import {
-  APP_FEEDBACK_TOOL_NAME,
-  ASK_USER_QUESTION_TOOL_NAME,
-} from "./toolName";
+import { APP_FEEDBACK_TOOL_NAME, ASK_USER_QUESTION_TOOL_NAME } from "@/tools";
 import type { Tools } from "@/types";
 
 /**
@@ -98,7 +95,9 @@ export function getSystemPrompt(tools: Tools): string[] {
     `您是${config.APP_NAME}`,
     `您是一个自主的代理人。利用现有工具，做些有用的事情`,
   ];
-  return items;
+  // 过滤出所有已启用的工具名称
+  const enabledTools = new Set(tools.map((_) => _.name));
+  return items.filter((s) => s != null);
 }
 
 /**
