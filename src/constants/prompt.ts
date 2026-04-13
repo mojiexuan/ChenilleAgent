@@ -2,13 +2,36 @@ import { config } from "@/config";
 import { RISK_INSTRUCTION } from "./riskInstruction";
 import { APP_FEEDBACK_TOOL_NAME, ASK_USER_QUESTION_TOOL_NAME } from "@/tools";
 import type { Tools } from "@/types";
-import { TICK_TAG } from "./xml";
+import { SYSTEM_REMINDER_TAG, TICK_TAG } from "./xml";
 import { SLEEP_TOOL_NAME } from "@/tools";
 
 /**
- * 获取简单的介绍段落
+ * 获取系统提示段落
  */
-function getSimpleIntroSection(): string {
+function getSystemRemindersSection(): string {
+  const items = [
+    `工具结果和用户消息中可能包含\`<${SYSTEM_REMINDER_TAG}>\`标签。\`<SYSTEM_REMINDER_TAG}\`标签包含有用信息和提醒。它们由系统自动添加，与它们所出现的特定工具结果或用户消息无直接关联。`,
+    `通过自动摘要，对话的上下文信息变得无限丰富`,
+  ];
+  return prependBullets(items).join("\n");
+}
+
+/**
+ * 获取语言段落
+ */
+function getLanguageSection(
+  languagePreference: string | undefined,
+): string | null {
+  if (!languagePreference) return null;
+
+  return `# 语言
+  始终使用${languagePreference}进行回复。在所有解释、评论以及与用户的沟通中，请使用${languagePreference}。技术术语和代码标识符应保持原样。`;
+}
+
+/**
+ * 获取介绍段落
+ */
+function getIntroSection(): string {
   const items = [
     `您是一个教育领域综合专家，帮助用户处理教育相关任务，使用下面的说明和您可用的工具来协助用户。`,
     RISK_INSTRUCTION,
@@ -19,9 +42,9 @@ function getSimpleIntroSection(): string {
 }
 
 /**
- * 获取简单的系统提示
+ * 获取系统提示段落
  */
-function getSimpleSystemSection(): string {
+function getSystemSection(): string {
   const items = [
     `您在工具使用之外输出的所有文本都会展示给用户。输出文本用于与用户交互。您可以使用Github风格的Markdown进行格式化，并且将使用CommonMark规范以等宽字体呈现。`,
     `工具在用户选择的权限模式下执行。当您尝试调用一个未被用户权限模式或权限设置自动允许的工具时，系统会提示用户，以便他们可以批准或拒绝执行。如果用户拒绝您调用的工具，请不要再次尝试调用完全相同的工具。相反，应思考用户拒绝工具调用的原因，并调整您的策略。`,
@@ -33,9 +56,9 @@ function getSimpleSystemSection(): string {
 }
 
 /**
- * 获取简单的执行任务提示
+ * 获取执行任务提示段落
  */
-function getSimpleDoingTasksSection(): string {
+function getDoingTasksSection(): string {
   const restriction = [
     `不要添加额外的课程步骤，修改课程步骤或删除课程步骤时，不要改变其他课程步骤。`,
     `添加或修改课程步骤或内容时，您至少需要阅读课程步骤附近或课程其他相关信息，确保您理解课程步骤的上下文和目的，保持整门课程的连贯性和逻辑性。`,
@@ -72,7 +95,7 @@ function getActionsSection(): string {
 }
 
 /**
- * 获取简单的使用工具提示
+ * 获取使用工具提示段落
  */
 function getUsingYourToolsSection(enabledTools: Set<string>): string {
   return "";
@@ -90,7 +113,7 @@ function getSimpleToneAndStyleSection(): string {
 }
 
 /**
- * 获取简单的输出效率提示
+ * 获取输出效率提示段落
  */
 function getOutputEfficiencySection(): string {
   return `# 输出效率
