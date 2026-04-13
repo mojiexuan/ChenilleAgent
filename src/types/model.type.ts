@@ -8,10 +8,6 @@ export interface ChatMessage {
   content: string;
 }
 
-export interface ChatResult extends ChatMessage {
-  reasoning?: string; // 思考过程
-}
-
 export interface OpenAiInit {
   apiKey: string;
   baseURL?: string;
@@ -25,6 +21,21 @@ export interface OpenAiRequest {
   max_tokens?: number; // 最大token（可选）
   stream?: boolean; // 是否开启流式输出（可选）
   onChunk?: (chunk: ChatResult) => void; // 流式输出回调（可选）
+}
+
+export interface ChatResult extends ChatMessage {
+  reasoning?: string; // 思考过程
+  usage?: ChatUsage; // 调用统计
+  finished: boolean; // 是否完成对话
+}
+
+export interface ChatUsage {
+  prompt_tokens: number;
+  completion_tokens: number;
+  total_tokens: number;
+  prompt_tokens_details: {
+    cached_tokens: number;
+  };
 }
 
 // export interface ChatTool<TSchema extends z.ZodTypeAny, TResult> {

@@ -36,6 +36,7 @@ class OpenAiModel {
             content:
               (stream as OpenAI.Chat.Completions.ChatCompletion).choices?.[0]
                 ?.message?.content || "",
+            finished: true,
           } as ChatResult;
         }
 
@@ -43,20 +44,35 @@ class OpenAiModel {
 
         for await (const chunk of stream as Stream<OpenAI.Chat.Completions.ChatCompletionChunk>) {
           const content = chunk.choices?.[0]?.delta?.content || "";
-          if (content) {
+          if (content || chunk.choices?.[0]?.finish_reason === "stop") {
             fullText += content;
             options.onChunk?.({
               role: "assistant",
               content: content,
+              ...(chunk.usage
+                ? {
+                    usage: {
+                      prompt_tokens: chunk.usage.prompt_tokens,
+                      completion_tokens: chunk.usage.completion_tokens,
+                      total_tokens: chunk.usage.total_tokens,
+                      prompt_tokens_details: {
+                        cached_tokens:
+                          chunk.usage.prompt_tokens_details?.cached_tokens ?? 0,
+                      },
+                    },
+                  }
+                : {}),
+              finished: chunk.choices?.[0]?.finish_reason === "stop",
             });
           }
         }
         return {
           role: "assistant",
           content: fullText,
+          finished: true,
         } as ChatResult;
       });
   }
 }
 
-export default OpenAiModel;
+export { OpenAiModel };

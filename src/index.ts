@@ -1,5 +1,5 @@
 import { config } from "@/config";
-import OpenAiModel from "./models/openai";
+import { OpenAiModel } from "@/models";
 
 async function main() {
   const openaiModel = new OpenAiModel({
