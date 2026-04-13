@@ -1,7 +1,10 @@
 import { config } from "@/config";
 import { aiChatService } from "@/services";
+import bootstrap from "@/bootstrap";
 
 async function main() {
+  await bootstrap();
+
   await aiChatService({
     provider: "deepseek",
     apiKey: config.OPENAI_API_KEY,

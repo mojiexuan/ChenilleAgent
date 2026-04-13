@@ -1,4 +1,12 @@
-import { Tool, Tools } from "@/types";
+import { Tool, Tools, AnyToolDef, BuiltTool } from "@/types";
+
+// 工具默认值
+export const TOOL_DEFAULTS = {
+  isEnabled: () => true,
+  isConcurrencySafe: (_input?: unknown) => false,
+  isReadOnly: (_input?: unknown) => false,
+  isDestructive: (_input?: unknown) => false,
+};
 
 /**
  * 检查工具是否与给定名称（主要名称或别名）匹配
@@ -21,4 +29,14 @@ export function toolMatchesName(
  */
 export function findToolByName(tools: Tools, name: string): Tool | undefined {
   return tools.find((t) => toolMatchesName(t, name));
+}
+
+/**
+ * 构建工具
+ */
+export function buildTool<D extends AnyToolDef>(def: D): BuiltTool<D> {
+  return {
+    ...TOOL_DEFAULTS,
+    ...def,
+  } as BuiltTool<D>;
 }

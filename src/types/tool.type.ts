@@ -4,6 +4,7 @@
 //   AssistantMessage,
 //   UserMessage,
 // } from "./message.type";
+import { TOOL_DEFAULTS } from "@/tools";
 import type { AnyObject } from "./object.type";
 import { z } from "zod/v4";
 
@@ -109,3 +110,37 @@ export type ToolProgress<P extends ToolProgressData> = {
   toolUseID: string;
   data: P;
 };
+
+/**
+ * `buildTool` 为其提供默认值的方法。`ToolDef` 可以省略这些方法；
+ * 生成的`Tool`总是包含这些属性。
+ */
+type DefaultableToolKeys =
+  | "isEnabled"
+  | "isConcurrencySafe"
+  | "isReadOnly"
+  | "isDestructive";
+
+/**
+ * `buildTool`接受的工具定义。与`Tool`形状相同，但带有
+ * 可默认的方法（可选）— `buildTool` 会填充这些方法，因此调用者总是
+ * 看到一个完整的“工具”。
+ */
+export type ToolDef<
+  Input extends AnyObject = AnyObject,
+  Output = unknown,
+  P extends ToolProgressData = ToolProgressData,
+> = Omit<Tool<Input, Output, P>, DefaultableToolKeys> &
+  Partial<Pick<Tool<Input, Output, P>, DefaultableToolKeys>>;
+
+export type AnyToolDef = ToolDef<any, any, any>;
+
+export type BuiltTool<D> = Omit<D, DefaultableToolKeys> & {
+  [K in DefaultableToolKeys]-?: K extends keyof D
+    ? undefined extends D[K]
+      ? ToolDefaults[K]
+      : D[K]
+    : ToolDefaults[K];
+};
+
+export type ToolDefaults = typeof TOOL_DEFAULTS;
