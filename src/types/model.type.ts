@@ -15,12 +15,19 @@ export interface OpenAiInit {
 }
 
 export interface OpenAiRequest {
-  model: string; // 模型名称
+  model?: string; // 模型名称
   messages: ChatMessage[]; // 对话内容
   temperature?: number; // 温度（可选）
   max_tokens?: number; // 最大token（可选）
   stream?: boolean; // 是否开启流式输出（可选）
   onChunk?: (chunk: ChatResult) => void; // 流式输出回调（可选）
+}
+
+/**
+ * 聊天请求参数
+ */
+export interface ChatRequest extends OpenAiInit, OpenAiRequest {
+  provider: AIProvider;
 }
 
 export interface ChatResult extends ChatMessage {
