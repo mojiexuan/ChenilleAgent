@@ -1,13 +1,62 @@
+import { ChatResult, OpenAiInit, OpenAiRequest } from "@/types";
 import OpenAI from "openai";
+import { Stream } from "openai/core/streaming";
 
+/**
+ * OpenAI 模型
+ */
 class OpenAiModel {
   private client: OpenAI;
+  private model: string;
 
-  constructor() {
+  constructor(init: OpenAiInit) {
     this.client = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
+      baseURL: init.baseURL ?? "https://api.openai.com/v1",
+      apiKey: init.apiKey,
     });
+    this.model = init.model ?? "gpt-5";
+  }
+
+  async generate(options: OpenAiRequest) {
+    return this.client.chat.completions
+      .create({
+        model: options.model ?? this.model,
+        messages: options.messages.map((msg) => ({
+          role: msg.role,
+          content: msg.content,
+        })) as OpenAI.Chat.Completions.ChatCompletionMessageParam[],
+        stream: options.stream ?? false,
+        temperature: options.temperature ?? 0.7,
+        max_tokens: options.max_tokens ?? 1024,
+      })
+      .then(async (stream) => {
+        if (!options.stream) {
+          return {
+            role: "assistant",
+            content:
+              (stream as OpenAI.Chat.Completions.ChatCompletion).choices?.[0]
+                ?.message?.content || "",
+          } as ChatResult;
+        }
+
+        let fullText = "";
+
+        for await (const chunk of stream as Stream<OpenAI.Chat.Completions.ChatCompletionChunk>) {
+          const content = chunk.choices?.[0]?.delta?.content || "";
+          if (content) {
+            fullText += content;
+            options.onChunk?.({
+              role: "assistant",
+              content: content,
+            });
+          }
+        }
+        return {
+          role: "assistant",
+          content: fullText,
+        } as ChatResult;
+      });
   }
 }
 
-export const openAiModel = new OpenAiModel();
+export default OpenAiModel;

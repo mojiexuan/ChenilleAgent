@@ -1,1 +1,2 @@
-export const greeting = '你好';
+export * from "./prompt";
+export * from "./riskInstruction";

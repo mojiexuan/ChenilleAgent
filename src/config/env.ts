@@ -1,4 +1,5 @@
-import type { Config, EnvSchema } from '@/types';
+import "dotenv/config";
+import type { Config, EnvSchema } from "@/types";
 
 /**
  * 集中定义所有环境变量。
@@ -6,8 +7,10 @@ import type { Config, EnvSchema } from '@/types';
  * - value 为 undefined：必填项，env 中未设置则退出程序
  */
 export const schema = {
-  NODE_ENV: 'development',
-  APP_NAME: 'Chenille Agent'
+  NODE_ENV: "development",
+  APP_NAME: "Chenille Agent",
+  OPENAI_API_KEY: undefined,
+  OPENAI_API_BASE: undefined,
 } satisfies EnvSchema;
 
 const cache = new Map<string, string>();
@@ -45,4 +48,4 @@ export const config: Config = new Proxy(schema, {
 
     return undefined;
   },
-}) as Config;
+}) as unknown as Config;

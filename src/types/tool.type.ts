@@ -1,9 +1,9 @@
-import {
-  SystemMessage,
-  AttachmentMessage,
-  AssistantMessage,
-  UserMessage,
-} from "./message.type";
+// import {
+//   SystemMessage,
+//   AttachmentMessage,
+//   AssistantMessage,
+//   UserMessage,
+// } from "./message.type";
 import type { AnyObject } from "./object.type";
 import { z } from "zod/v4";
 
@@ -41,7 +41,7 @@ export type Tool<
   interruptBehavior?(): "cancel" | "block";
   call(
     args: z.infer<Input>,
-    parentMessage: AssistantMessage,
+    // parentMessage: AssistantMessage,
     onProgress?: ToolCallProgress<P>,
   ): Promise<ToolResult<Output>>;
   description(
@@ -74,12 +74,12 @@ export type Tools = readonly Tool[];
  */
 export type ToolResult<T> = {
   data: T;
-  newMessages?: (
-    | UserMessage
-    | AssistantMessage
-    | AttachmentMessage
-    | SystemMessage
-  )[];
+  // newMessages?: (
+  //   | UserMessage
+  //   | AssistantMessage
+  //   | AttachmentMessage
+  //   | SystemMessage
+  // )[];
   // 将MCP协议元数据传递给SDK用户
   mcpMeta?: {
     _meta?: Record<string, unknown>;
