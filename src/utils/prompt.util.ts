@@ -1,9 +1,15 @@
 import { config } from "@/config";
-import { RISK_INSTRUCTION } from "./riskInstruction";
+import { RISK_INSTRUCTION, SYSTEM_REMINDER_TAG, TICK_TAG } from "@/constants";
 import { APP_FEEDBACK_TOOL_NAME, ASK_USER_QUESTION_TOOL_NAME } from "@/tools";
-import type { Tools } from "@/types";
-import { SYSTEM_REMINDER_TAG, TICK_TAG } from "./xml";
+import type { Tools, SystemPrompt } from "@/types";
 import { SLEEP_TOOL_NAME } from "@/tools";
+
+/**
+ * 转换为系统提示词
+ */
+export function asSystemPrompt(value: readonly string[]): SystemPrompt {
+  return value as SystemPrompt;
+}
 
 /**
  * 获取系统提示段落

@@ -6,3 +6,5 @@ export type * from "./model.type";
 export type * from "./ids.type";
 export type * from "./state.type";
 export type * from "./ai.type";
+export type * from "./prompt.type";
+export type * from "./schema.type";

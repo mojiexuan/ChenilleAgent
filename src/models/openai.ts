@@ -1,6 +1,7 @@
 import { ChatResult, ChatModel, ChatRequest } from "@/types";
 import OpenAI from "openai";
 import { Stream } from "openai/core/streaming";
+import z from "zod/v4";
 
 /**
  * OpenAI 模型
@@ -21,7 +22,7 @@ class OpenAiModel {
     });
   }
 
-  async generate(options: ChatRequest) {
+  async generate(options: ChatRequest): Promise<ChatResult> {
     const controller = new AbortController();
     let aborted = false;
 
@@ -46,14 +47,25 @@ class OpenAiModel {
           stream: options.stream ?? false,
           temperature: options.temperature ?? 0.7,
           max_tokens: options.max_tokens ?? 1024,
+          ...(options.jsonSchema
+            ? {
+                response_format: {
+                  type: "json_schema",
+                  json_schema: {
+                    name: "response",
+                    schema: z.toJSONSchema(options.jsonSchema),
+                  },
+                },
+              }
+            : {}),
         },
         { signal: controller.signal },
       )
       .then(async (stream) => {
         if (!options.stream) {
-          result.content =
-            (stream as OpenAI.Chat.Completions.ChatCompletion).choices?.[0]
-              ?.message?.content || "";
+          const text = (stream as OpenAI.Chat.Completions.ChatCompletion)
+            .choices?.[0]?.message?.content;
+          result.content = text || "";
           result.finished = true;
           return result;
         }

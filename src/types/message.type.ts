@@ -14,12 +14,11 @@ export type MessageBase = {
   parentUuid?: string;
   timestamp?: string;
   createdAt?: string;
-  isMeta?: boolean;
-  isVirtual?: boolean;
-  isCompactSummary?: boolean;
-  toolUseResult?: unknown;
-  origin?: MessageOrigin;
-  [key: string]: unknown;
+  isMeta?: boolean; // 是否为元消息（不显示给用户）
+  isVirtual?: boolean; // 是否为虚拟消息（临时/占位）
+  isCompactSummary?: boolean; // 是否为压缩后的摘要消息
+  toolUseResult?: unknown; // 工具使用结果
+  origin?: MessageOrigin; // 消息来源信息
 };
 
 /**
@@ -36,10 +35,10 @@ export type AttachmentMessage = MessageBase & {
 export type UserMessage = MessageBase & {
   type: "user";
   message: {
+    role: "user";
     content:
       | string
       | Array<{ type: string; text?: string; [key: string]: unknown }>;
-    [key: string]: unknown;
   };
 };
 
@@ -48,9 +47,9 @@ export type UserMessage = MessageBase & {
  */
 export type AssistantMessage = MessageBase & {
   type: "assistant";
-  message?: {
+  message: {
+    role: "assistant";
     content?: unknown;
-    [key: string]: unknown;
   };
 };
 

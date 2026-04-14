@@ -1,5 +1,6 @@
-// import type { z } from "zod";
+import { ZodType } from "zod/v4";
 import type { AbortSignal } from "./ai.type";
+import { SystemPrompt } from "./prompt.type";
 
 export type AIProvider = "openai" | "deepseek";
 export type Role = "system" | "user" | "assistant" | "tool";
@@ -25,13 +26,47 @@ export interface ChatModel {
 /**
  * 聊天请求参数
  */
-export interface ChatRequest {
+export type ChatBaseRequest = {
+  systemPrompt?: SystemPrompt; // 系统提示词
   messages: ChatMessage[]; // 对话内容
   temperature?: number; // 温度（可选）
   max_tokens?: number; // 最大token（可选）
-  stream?: boolean; // 是否开启流式输出（可选）
+};
+
+/**
+ * 流式输出请求参数
+ */
+export type ChatStreamRequest = ChatBaseRequest & {
+  stream: true; // 是否开启流式输出（可选）
+  jsonSchema?: never;
   onChunk?: (chunk: ChatResult) => void; // 流式输出回调（可选）
-}
+};
+
+/**
+ * JSON 输出请求参数
+ */
+export type ChatJsonRequest = ChatBaseRequest & {
+  jsonSchema: ZodType; // JSON 模式（可选）
+  stream?: false;
+  onChunk?: never;
+};
+
+/**
+ * 普通请求参数
+ */
+export type ChatNormalRequest = ChatBaseRequest & {
+  stream?: false;
+  jsonSchema?: undefined;
+  onChunk?: never;
+};
+
+/**
+ * 聊天请求参数
+ */
+export type ChatRequest =
+  | ChatNormalRequest
+  | ChatStreamRequest
+  | ChatJsonRequest;
 
 /**
  * 聊天结果
