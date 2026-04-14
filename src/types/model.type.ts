@@ -1,4 +1,5 @@
 // import type { z } from "zod";
+import type { AbortSignal } from "./ai.type";
 
 export type AIProvider = "openai" | "deepseek";
 export type Role = "system" | "user" | "assistant" | "tool";
@@ -30,7 +31,7 @@ export interface ChatRequest extends OpenAiInit, OpenAiRequest {
   provider: AIProvider;
 }
 
-export interface ChatResult extends ChatMessage {
+export interface ChatResult extends ChatMessage, AbortSignal {
   reasoning?: string; // 思考过程
   usage?: ChatUsage; // 调用统计
   finished: boolean; // 是否完成对话
