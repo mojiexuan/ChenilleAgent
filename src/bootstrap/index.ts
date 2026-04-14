@@ -1,8 +1,43 @@
+import { CourseId, SessionId, State } from "@/types";
+import { randomUUID } from "@/utils";
+
 /**
- * 引导函数
+ * 获取初始状态
  */
-async function bootstrap() {
-  console.log("bootstrap");
+function getInitialState(): State {
+  const state: State = {
+    sessionId: randomUUID() as SessionId,
+    parentSessionId: undefined,
+    courseId: undefined,
+  };
+  return state;
 }
 
-export default bootstrap;
+/**
+ * 状态管理
+ */
+const STATE: State = getInitialState();
+
+/**
+ * 获取当前会话ID
+ */
+export function getSessionId(): SessionId {
+  return STATE.sessionId;
+}
+
+/**
+ * 获取父会话ID
+ */
+export function getParentSessionId(): SessionId | undefined {
+  return STATE.parentSessionId;
+}
+
+/**
+ * 切换会话
+ * @param sessionId 会话ID
+ * @param courseId 课程ID
+ */
+export function switchSession(sessionId: SessionId, courseId?: CourseId): void {
+  STATE.sessionId = sessionId;
+  STATE.courseId = courseId;
+}
