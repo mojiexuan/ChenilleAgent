@@ -1,7 +1,4 @@
-import { CourseId, SessionId } from "./ids.type";
+import { Course } from "./course.type";
+import { SessionBase } from "./session.type";
 
-export interface State {
-  sessionId: SessionId;
-  parentSessionId?: SessionId | undefined;
-  courseId?: CourseId | undefined;
-}
+export interface State extends SessionBase, Course {}

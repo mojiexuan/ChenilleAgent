@@ -7,4 +7,5 @@ export type * from "./ids.type";
 export type * from "./state.type";
 export type * from "./ai.type";
 export type * from "./prompt.type";
-export type * from "./schema.type";
+export type * from "./course.type";
+export type * from "./session.type";
