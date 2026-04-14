@@ -4,19 +4,28 @@ import type { AbortSignal } from "./ai.type";
 export type AIProvider = "openai" | "deepseek";
 export type Role = "system" | "user" | "assistant" | "tool";
 
+/**
+ * 聊天消息
+ */
 export interface ChatMessage {
   role: Role;
   content: string;
 }
 
-export interface OpenAiInit {
+/**
+ * 聊天模型
+ */
+export interface ChatModel {
+  provider: AIProvider;
   apiKey: string;
   baseURL?: string;
   model?: string;
 }
 
-export interface OpenAiRequest {
-  model?: string; // 模型名称
+/**
+ * 聊天请求参数
+ */
+export interface ChatRequest {
   messages: ChatMessage[]; // 对话内容
   temperature?: number; // 温度（可选）
   max_tokens?: number; // 最大token（可选）
@@ -25,18 +34,17 @@ export interface OpenAiRequest {
 }
 
 /**
- * 聊天请求参数
+ * 聊天结果
  */
-export interface ChatRequest extends OpenAiInit, OpenAiRequest {
-  provider: AIProvider;
-}
-
 export interface ChatResult extends ChatMessage, AbortSignal {
   reasoning?: string; // 思考过程
   usage?: ChatUsage; // 调用统计
   finished: boolean; // 是否完成对话
 }
 
+/**
+ * 聊天调用统计
+ */
 export interface ChatUsage {
   prompt_tokens: number;
   completion_tokens: number;

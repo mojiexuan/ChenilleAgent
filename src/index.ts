@@ -1,13 +1,8 @@
 import "@/bootstrap";
-import { config } from "@/config";
-import { aiChatService } from "@/services";
+import { deepseekChatService } from "@/services";
 
 async function main() {
-  await aiChatService({
-    provider: "deepseek",
-    apiKey: config.OPENAI_API_KEY,
-    baseURL: config.OPENAI_API_BASE,
-    model: "deepseek-chat",
+  await deepseekChatService({
     messages: [
       { role: "system", content: "你是一个专业的翻译" },
       { role: "user", content: "你好" },

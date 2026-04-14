@@ -1,4 +1,4 @@
-import { ChatResult, OpenAiInit, OpenAiRequest } from "@/types";
+import { ChatResult, ChatModel, ChatRequest } from "@/types";
 import OpenAI from "openai";
 import { Stream } from "openai/core/streaming";
 
@@ -7,17 +7,21 @@ import { Stream } from "openai/core/streaming";
  */
 class OpenAiModel {
   private client: OpenAI;
-  private model: string;
+  private model: ChatModel & { model: string; baseURL: string };
 
-  constructor(init: OpenAiInit) {
+  constructor(init: ChatModel) {
+    this.model = {
+      baseURL: "https://api.openai.com/v1",
+      model: "gpt-5",
+      ...init,
+    };
     this.client = new OpenAI({
-      baseURL: init.baseURL ?? "https://api.openai.com/v1",
-      apiKey: init.apiKey,
+      baseURL: this.model.baseURL,
+      apiKey: this.model.apiKey,
     });
-    this.model = init.model ?? "gpt-5";
   }
 
-  async generate(options: OpenAiRequest) {
+  async generate(options: ChatRequest) {
     const controller = new AbortController();
     let aborted = false;
 
@@ -34,7 +38,7 @@ class OpenAiModel {
     return this.client.chat.completions
       .create(
         {
-          model: options.model ?? this.model,
+          model: this.model.model,
           messages: options.messages.map((msg) => ({
             role: msg.role,
             content: msg.content,
