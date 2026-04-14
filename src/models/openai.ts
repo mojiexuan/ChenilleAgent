@@ -8,7 +8,6 @@ import { Stream } from "openai/core/streaming";
 class OpenAiModel {
   private client: OpenAI;
   private model: string;
-  private controller: AbortController;
 
   constructor(init: OpenAiInit) {
     this.client = new OpenAI({
@@ -16,12 +15,15 @@ class OpenAiModel {
       apiKey: init.apiKey,
     });
     this.model = init.model ?? "gpt-5";
-    this.controller = new AbortController();
   }
 
   async generate(options: OpenAiRequest) {
+    const controller = new AbortController();
+    let aborted = false;
+
     const abortSignal = () => {
-      this.controller.abort();
+      aborted = true;
+      controller.abort();
     };
     const result: ChatResult = {
       role: "assistant",
@@ -41,7 +43,7 @@ class OpenAiModel {
           temperature: options.temperature ?? 0.7,
           max_tokens: options.max_tokens ?? 1024,
         },
-        { signal: this.controller.signal },
+        { signal: controller.signal },
       )
       .then(async (stream) => {
         if (!options.stream) {
@@ -55,10 +57,13 @@ class OpenAiModel {
         let fullText = "";
 
         for await (const chunk of stream as Stream<OpenAI.Chat.Completions.ChatCompletionChunk>) {
+          if (aborted) {
+            break;
+          }
+
           const content = chunk.choices?.[0]?.delta?.content || "";
           if (content || chunk.choices?.[0]?.finish_reason === "stop") {
             fullText += content;
-            result.content = content;
             if (chunk.usage) {
               result.usage = {
                 prompt_tokens: chunk.usage.prompt_tokens,
@@ -71,14 +76,27 @@ class OpenAiModel {
               };
             }
             result.finished = chunk.choices?.[0]?.finish_reason === "stop";
-            options.onChunk?.(result);
+            options.onChunk?.({
+              ...result,
+              content,
+            });
           }
         }
         result.content = fullText;
         result.finished = true;
         return result;
       })
-      .catch(() => {});
+      .catch((err: Error) => {
+        if (
+          err.name === "AbortError" ||
+          (typeof err.message === "string" && err.message.includes("aborted"))
+        ) {
+          result.abort = undefined;
+          result.finished = true;
+          return result;
+        }
+        throw err;
+      });
   }
 }
 
