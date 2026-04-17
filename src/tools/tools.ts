@@ -1,5 +1,13 @@
-import { Tool, Tools, AnyToolDef, BuiltTool } from "@/types";
+import {
+  Tool,
+  Tools,
+  AnyToolDef,
+  BuiltTool,
+  ToolProgressData,
+  ToolDef,
+} from "@/types";
 import OpenAI from "openai";
+import z from "zod/v4";
 
 // 工具默认值
 export const TOOL_DEFAULTS = {
@@ -35,11 +43,15 @@ export function findToolByName(tools: Tools, name: string): Tool | undefined {
 /**
  * 构建工具
  */
-export function buildTool<D extends AnyToolDef>(def: D): BuiltTool<D> {
+export function buildTool<
+  TInput extends z.ZodTypeAny,
+  TOutput extends z.ZodTypeAny,
+  P extends ToolProgressData = ToolProgressData,
+>(def: ToolDef<TInput, TOutput, P>): Tool<TInput, TOutput, P> {
   return {
     ...TOOL_DEFAULTS,
     ...def,
-  } as BuiltTool<D>;
+  } as Tool<TInput, TOutput, P>;
 }
 
 /**

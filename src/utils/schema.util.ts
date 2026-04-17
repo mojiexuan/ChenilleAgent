@@ -1,5 +1,4 @@
-import { ZodType } from "zod";
-import z from "zod/v4";
+import z, { type ZodType } from "zod/v4";
 
 /**
  * 懒加载 Zod 模式

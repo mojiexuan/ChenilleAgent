@@ -7,10 +7,16 @@
 import { TOOL_DEFAULTS } from "@/tools";
 import type { AnyObject } from "./object.type";
 import { z } from "zod/v4";
+import {
+  AssistantMessage,
+  AttachmentMessage,
+  SystemMessage,
+  UserMessage,
+} from "./message.type";
 
 export type Tool<
-  Input extends AnyObject = AnyObject,
-  Output = unknown,
+  Input extends z.ZodTypeAny = z.ZodTypeAny,
+  Output extends z.ZodTypeAny = z.ZodTypeAny,
   P extends ToolProgressData = ToolProgressData,
 > = {
   // 工具名称
@@ -44,7 +50,7 @@ export type Tool<
     args: z.infer<Input>,
     // parentMessage: AssistantMessage,
     onProgress?: ToolCallProgress<P>,
-  ): Promise<ToolResult<Output>>;
+  ): Promise<ToolResult<z.infer<Output>>>;
   description(
     input: z.infer<Input>,
     options: {
@@ -56,7 +62,11 @@ export type Tool<
   /**
    * 输入参数的Zod模式
    */
-  readonly inputSchema: z.ZodType<Input>;
+  readonly inputSchema: Input;
+  /**
+   * 输出参数的Zod模式
+   */
+  outputSchema: Output;
   // 是否只读
   isReadOnly(input: z.infer<Input>): boolean;
   // 是否为破坏性操作， 默认为假。仅当工具执行不可逆操作（删除、覆盖、发送）时才设置。
@@ -75,12 +85,12 @@ export type Tools = readonly Tool[];
  */
 export type ToolResult<T> = {
   data: T;
-  // newMessages?: (
-  //   | UserMessage
-  //   | AssistantMessage
-  //   | AttachmentMessage
-  //   | SystemMessage
-  // )[];
+  newMessages?: (
+    | UserMessage
+    | AssistantMessage
+    | AttachmentMessage
+    | SystemMessage
+  )[];
   // 将MCP协议元数据传递给SDK用户
   mcpMeta?: {
     _meta?: Record<string, unknown>;
@@ -127,8 +137,8 @@ type DefaultableToolKeys =
  * 看到一个完整的“工具”。
  */
 export type ToolDef<
-  Input extends AnyObject = AnyObject,
-  Output = unknown,
+  Input extends z.ZodTypeAny = z.ZodTypeAny,
+  Output extends z.ZodTypeAny = z.ZodTypeAny,
   P extends ToolProgressData = ToolProgressData,
 > = Omit<Tool<Input, Output, P>, DefaultableToolKeys> &
   Partial<Pick<Tool<Input, Output, P>, DefaultableToolKeys>>;
