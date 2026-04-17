@@ -1,3 +1,5 @@
+import { ChatToolCall } from "./model.type";
+
 /**
  * 消息来源
  */
@@ -49,7 +51,8 @@ export type AssistantMessage = MessageBase & {
   type: "assistant";
   message: {
     role: "assistant";
-    content?: unknown;
+    content: string;
+    toolCalls?: ChatToolCall[];
   };
 };
 
@@ -76,6 +79,15 @@ export type SystemMessage = MessageBase & {
   message?: string;
 };
 
+export type ToolMessage = MessageBase & {
+  type: "tool";
+  message: {
+    role: "tool";
+    content: string;
+    toolCallId: string;
+  };
+};
+
 /**
  * 消息
  */
@@ -84,4 +96,5 @@ export type Message =
   | AssistantMessage
   | ProgressMessage
   | SystemMessage
-  | AttachmentMessage;
+  | AttachmentMessage
+  | ToolMessage;

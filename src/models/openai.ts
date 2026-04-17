@@ -1,6 +1,15 @@
-import { ChatResult, ChatModel, ChatRequest } from "@/types";
+import { toolToOpenAiClientSchema } from "@/tools";
+import {
+  ChatResult,
+  ChatModel,
+  ChatRequest,
+  ChatToolCall,
+  Message,
+  SystemPrompt,
+} from "@/types";
 import OpenAI from "openai";
 import { Stream } from "openai/core/streaming";
+import { ChatCompletionCreateParams } from "openai/resources/index";
 import z from "zod/v4";
 
 /**
@@ -31,19 +40,20 @@ class OpenAiModel {
       controller.abort();
     };
     const result: ChatResult = {
-      role: "assistant",
-      content: "",
+      type: "assistant",
+      message: {
+        role: "assistant",
+        content: "",
+      },
       finished: false,
-      abort: abortSignal,
     };
+    // 立即把 abort 暴露给外层
+    options.onAbort?.(abortSignal);
     return this.client.chat.completions
       .create(
         {
           model: this.model.model,
-          messages: options.messages.map((msg) => ({
-            role: msg.role,
-            content: msg.content,
-          })) as OpenAI.Chat.Completions.ChatCompletionMessageParam[],
+          messages: this.buildMessages(options.messages, options.systemPrompt),
           stream: options.stream ?? false,
           temperature: options.temperature ?? 0.7,
           max_tokens: options.max_tokens ?? 1024,
@@ -58,15 +68,40 @@ class OpenAiModel {
                 },
               }
             : {}),
-        },
+          ...(options.tools
+            ? {
+                tools: await Promise.all(
+                  options.tools.map(
+                    async (tool) => await toolToOpenAiClientSchema(tool),
+                  ),
+                ),
+                tool_choice: "auto",
+              }
+            : {}),
+          enable_thinking: false,
+        } as ChatCompletionCreateParams,
         { signal: controller.signal },
       )
       .then(async (stream) => {
         if (!options.stream) {
           const text = (stream as OpenAI.Chat.Completions.ChatCompletion)
             .choices?.[0]?.message?.content;
-          result.content = text || "";
+          result.message.content = text || "";
           result.finished = true;
+          const toolCalls = (stream as OpenAI.Chat.Completions.ChatCompletion)
+            .choices?.[0]?.message?.tool_calls;
+          if (toolCalls && toolCalls.length > 0) {
+            result.message.toolCalls = toolCalls.flatMap((call) => {
+              if (call.type === "function") {
+                return {
+                  id: call.id,
+                  name: call.function?.name,
+                  arguments: call.function?.arguments || undefined,
+                } as ChatToolCall;
+              }
+              return [];
+            });
+          }
           return result;
         }
 
@@ -76,6 +111,8 @@ class OpenAiModel {
           if (aborted) {
             break;
           }
+
+          // TODO 流式工具调用暂未处理 console.log("流式工具调用", chunk.choices?.[0]?.delta?.tool_calls);
 
           const content = chunk.choices?.[0]?.delta?.content || "";
           if (content || chunk.choices?.[0]?.finish_reason === "stop") {
@@ -92,13 +129,11 @@ class OpenAiModel {
               };
             }
             result.finished = chunk.choices?.[0]?.finish_reason === "stop";
-            options.onChunk?.({
-              ...result,
-              content,
-            });
+            result.message.content = content;
+            options.onChunk?.(result);
           }
         }
-        result.content = fullText;
+        result.message.content = fullText;
         result.finished = true;
         return result;
       })
@@ -107,12 +142,68 @@ class OpenAiModel {
           err.name === "AbortError" ||
           (typeof err.message === "string" && err.message.includes("aborted"))
         ) {
-          result.abort = undefined;
           result.finished = true;
           return result;
         }
         throw err;
       });
+  }
+
+  /**
+   * 构建OpenAI客户端消息参数
+   * @returns OpenAI客户端消息参数
+   */
+  private buildMessages(messages: Message[], systemPrompt?: SystemPrompt) {
+    return [
+      ...(systemPrompt
+        ? [
+            {
+              role: "system",
+              content: systemPrompt.join("\n"),
+            } as OpenAI.Chat.Completions.ChatCompletionMessageParam,
+          ]
+        : []),
+      ...messages.map((msg) => {
+        if (msg.type === "system") {
+          return {
+            role: msg.type,
+            content: msg.message,
+          } as OpenAI.Chat.Completions.ChatCompletionMessageParam;
+        }
+        if (msg.type === "assistant") {
+          return {
+            role: msg.message.role,
+            content: msg.message.content,
+            ...(msg.message.toolCalls
+              ? {
+                  tool_calls: msg.message.toolCalls.map((c) => ({
+                    id: c.id,
+                    type: "function",
+                    function: {
+                      name: c.name,
+                      arguments: c.arguments || "",
+                    },
+                  })),
+                }
+              : {}),
+          } as OpenAI.Chat.Completions.ChatCompletionMessageParam;
+        }
+        if (msg.type === "user") {
+          return {
+            role: msg.message.role,
+            content: msg.message.content,
+          } as OpenAI.Chat.Completions.ChatCompletionMessageParam;
+        }
+        if (msg.type === "tool") {
+          return {
+            role: msg.message.role,
+            content: msg.message.content,
+            tool_call_id: msg.message.toolCallId,
+          } as OpenAI.Chat.Completions.ChatCompletionMessageParam;
+        }
+        throw new Error(`未知的消息类型: ${msg.type}`);
+      }),
+    ] as OpenAI.Chat.Completions.ChatCompletionMessageParam[];
   }
 }
 

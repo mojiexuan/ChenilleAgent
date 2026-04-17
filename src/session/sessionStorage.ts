@@ -20,3 +20,9 @@ export function getSession(sessionId: SessionId) {
  * @param sessionId 会话ID
  */
 export function removeSession(sessionId: SessionId) {}
+
+/**
+ * 更新会话
+ * @param session 会话对象
+ */
+export function updateSession(session: Session) {}

@@ -16,7 +16,7 @@ export function asSystemPrompt(value: readonly string[]): SystemPrompt {
  */
 function getSystemRemindersSection(): string {
   const items = [
-    `工具结果和用户消息中可能包含\`<${SYSTEM_REMINDER_TAG}>\`标签。\`<SYSTEM_REMINDER_TAG}\`标签包含有用信息和提醒。它们由系统自动添加，与它们所出现的特定工具结果或用户消息无直接关联。`,
+    `工具结果和用户消息中可能包含\`<${SYSTEM_REMINDER_TAG}>\`标签。\`<${SYSTEM_REMINDER_TAG}\`标签包含有用信息和提醒。它们由系统自动添加，与它们所出现的特定工具结果或用户消息无直接关联。`,
     `通过自动摘要，对话的上下文信息变得无限丰富`,
   ];
   return prependBullets(items).join("\n");

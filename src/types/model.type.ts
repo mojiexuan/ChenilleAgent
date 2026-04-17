@@ -1,17 +1,9 @@
 import { ZodType } from "zod/v4";
-import type { AbortSignal } from "./ai.type";
-import { SystemPrompt } from "./prompt.type";
+import type { SystemPrompt } from "./prompt.type";
+import { AssistantMessage, Message } from "./message.type";
+import { Tools } from "./tool.type";
 
-export type AIProvider = "openai" | "deepseek";
-export type Role = "system" | "user" | "assistant" | "tool";
-
-/**
- * 聊天消息
- */
-export interface ChatMessage {
-  role: Role;
-  content: string;
-}
+export type AIProvider = "openai";
 
 /**
  * 聊天模型
@@ -28,9 +20,11 @@ export interface ChatModel {
  */
 export type ChatBaseRequest = {
   systemPrompt?: SystemPrompt; // 系统提示词
-  messages: ChatMessage[]; // 对话内容
+  messages: Message[]; // 对话内容
+  tools?: Tools; // 工具（可选）
   temperature?: number; // 温度（可选）
   max_tokens?: number; // 最大token（可选）
+  onAbort?: (abort: () => void) => void;
 };
 
 /**
@@ -71,7 +65,7 @@ export type ChatRequest =
 /**
  * 聊天结果
  */
-export interface ChatResult extends ChatMessage, AbortSignal {
+export interface ChatResult extends AssistantMessage {
   reasoning?: string; // 思考过程
   usage?: ChatUsage; // 调用统计
   finished: boolean; // 是否完成对话
@@ -96,11 +90,11 @@ export interface ChatUsage {
 //   execute: (args: z.infer<TSchema>) => Promise<TResult>;
 // }
 
-// export interface ChatToolCall {
-//   id: string;
-//   name: string;
-//   arguments: string; // 原始 JSON 字符串
-// }
+export interface ChatToolCall {
+  id: string;
+  name: string;
+  arguments?: string; // 原始 JSON 字符串
+}
 
 // export interface MCPClient {
 //   call<T = unknown>(req: {

@@ -1,4 +1,5 @@
 import { Tool, Tools, AnyToolDef, BuiltTool } from "@/types";
+import OpenAI from "openai";
 
 // 工具默认值
 export const TOOL_DEFAULTS = {
@@ -39,4 +40,22 @@ export function buildTool<D extends AnyToolDef>(def: D): BuiltTool<D> {
     ...TOOL_DEFAULTS,
     ...def,
   } as BuiltTool<D>;
+}
+
+/**
+ * 将工具转换为OpenAI客户端工具模式
+ */
+export async function toolToOpenAiClientSchema(
+  tool: Tool,
+): Promise<OpenAI.Chat.Completions.ChatCompletionTool> {
+  const description = (await tool.prompt({ tools: [] })) || "";
+  const schema: OpenAI.Chat.Completions.ChatCompletionTool = {
+    type: "function",
+    function: {
+      name: tool.name,
+      description,
+      parameters: tool.inputSchema.toJSONSchema(),
+    },
+  };
+  return schema;
 }
