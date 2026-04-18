@@ -10,3 +10,4 @@ export type * from "./prompt.type";
 export type * from "./course.type";
 export type * from "./session.type";
 export type * from "./skill.type";
+export type * from "./mcp.type";
