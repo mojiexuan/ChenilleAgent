@@ -1,8 +1,18 @@
 import "@/bootstrap";
-import { openaiChatService } from "@/services";
+import { ClientService } from "@/services";
+import { config } from "./config";
+
+const clientService = new ClientService();
+
+
 
 async function main() {
-  await openaiChatService({
+  await clientService.chat({
+    provider: "openai",
+    apiKey: config.OPENAI_API_KEY,
+    baseURL: config.OPENAI_API_BASE,
+    model: config.OPENAI_API_MODEL,
+  }, {
     messages: [
       {
         type: "system",

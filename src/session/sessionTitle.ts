@@ -1,9 +1,11 @@
-import { openaiChatService } from "@/services";
-import { Message } from "@/types";
+import { ClientService } from "@/services";
+import { ChatModel, Message } from "@/types";
 import { lazySchema, parseWithSchema } from "@/utils";
 import z from "zod/v4";
 
 const MAX_CONVERSATION_TEXT = 1000;
+
+const clientService = new ClientService();
 
 /**
  * 将消息数组展平为一个文本字符串
@@ -53,9 +55,10 @@ const SESSION_TITLE_PROMPT = `生成一个简洁的、句子首字母大写(英�
  * 生成会话标题
  */
 export async function generateSessionTitle(
+  model: ChatModel,
   messages: Message[],
 ): Promise<string | null> {
-  const result = await openaiChatService({
+  const result = await clientService.chat(model, {
     messages: [
       {
         type: "system",
