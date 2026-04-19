@@ -1,4 +1,4 @@
-import { CourseId, SessionId, State } from "@/types";
+import { SessionId, State } from "@/types";
 import { randomUUID } from "@/utils";
 
 /**
@@ -8,7 +8,6 @@ function getInitialState(): State {
   const state: State = {
     sessionId: randomUUID() as SessionId,
     parentSessionId: undefined,
-    courseId: undefined,
   };
   return state;
 }
@@ -37,7 +36,6 @@ export function getParentSessionId(): SessionId | undefined {
  * @param sessionId 会话ID
  * @param courseId 课程ID
  */
-export function switchSession(sessionId: SessionId, courseId?: CourseId): void {
+export function switchSession(sessionId: SessionId): void {
   STATE.sessionId = sessionId;
-  STATE.courseId = courseId;
 }

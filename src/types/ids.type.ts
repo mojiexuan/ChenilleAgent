@@ -2,5 +2,3 @@
 export type SessionId = string & { readonly __brand: "SessionId" };
 // 代理ID
 export type AgentId = string & { readonly __brand: "AgentId" };
-// 课程ID
-export type CourseId = string & { readonly __brand: "CourseId" };
