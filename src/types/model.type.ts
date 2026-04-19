@@ -2,6 +2,7 @@ import { ZodType } from "zod/v4";
 import type { SystemPrompt } from "./prompt.type";
 import { AssistantMessage, Message } from "./message.type";
 import { Tools } from "./tool.type";
+import { AiAbort } from "./ai.type";
 
 export type AIProvider = "openai" | "google";
 
@@ -24,8 +25,10 @@ export type ChatBaseRequest = {
   tools?: Tools; // 工具（可选）
   temperature?: number; // 温度（可选）
   max_tokens?: number; // 最大token（可选）
-  onAbort?: (abort: () => void) => void;
+  onAbort?: AiAbort;
 };
+
+export type AiChunk = (chunk: ChatResult) => void;
 
 /**
  * 流式输出请求参数
@@ -33,7 +36,7 @@ export type ChatBaseRequest = {
 export type ChatStreamRequest = ChatBaseRequest & {
   stream: true; // 是否开启流式输出（可选）
   jsonSchema?: never;
-  onChunk?: (chunk: ChatResult) => void; // 流式输出回调（可选）
+  onChunk?: AiChunk; // 流式输出回调（可选）
 };
 
 /**
