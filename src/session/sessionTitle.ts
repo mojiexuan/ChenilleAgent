@@ -1,4 +1,4 @@
-import { deepseekChatService } from "@/services";
+import { openaiChatService } from "@/services";
 import { Message } from "@/types";
 import { lazySchema, parseWithSchema } from "@/utils";
 import z from "zod/v4";
@@ -55,12 +55,21 @@ const SESSION_TITLE_PROMPT = `生成一个简洁的、句子首字母大写(英�
 export async function generateSessionTitle(
   messages: Message[],
 ): Promise<string | null> {
-  const result = await deepseekChatService({
+  const result = await openaiChatService({
     messages: [
-      { role: "system", content: SESSION_TITLE_PROMPT },
-      { role: "user", content: extractConversationText(messages) },
+      {
+        type: "system",
+        message: SESSION_TITLE_PROMPT,
+      },
+      {
+        type: "user",
+        message: {
+          role: "user",
+          content: extractConversationText(messages),
+        }
+      }
     ],
     jsonSchema: titleSchema(),
   });
-  return parseWithSchema(titleSchema(), result.content)?.title || null;
+  return parseWithSchema(titleSchema(), result.message.content)?.title || null;
 }

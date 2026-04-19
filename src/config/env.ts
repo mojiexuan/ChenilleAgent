@@ -11,6 +11,7 @@ export const schema = {
   APP_NAME: "Chenille Agent",
   OPENAI_API_KEY: undefined,
   OPENAI_API_BASE: undefined,
+  OPENAI_API_MODEL: "gpt-5.4",
 } satisfies EnvSchema;
 
 const cache = new Map<string, string>();
