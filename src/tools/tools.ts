@@ -4,7 +4,6 @@ import {
   ToolProgressData,
   ToolDef,
 } from "@/types";
-import OpenAI from "openai";
 import z from "zod/v4";
 
 // 工具默认值
@@ -50,22 +49,4 @@ export function buildTool<
     ...TOOL_DEFAULTS,
     ...def,
   } as Tool<TInput, TOutput, P>;
-}
-
-/**
- * 将工具转换为OpenAI客户端工具模式
- */
-export async function toolToOpenAiClientSchema(
-  tool: Tool,
-): Promise<OpenAI.Chat.Completions.ChatCompletionTool> {
-  const description = (await tool.prompt({ tools: [] })) || "";
-  const schema: OpenAI.Chat.Completions.ChatCompletionTool = {
-    type: "function",
-    function: {
-      name: tool.name,
-      description,
-      parameters: tool.inputSchema.toJSONSchema(),
-    },
-  };
-  return schema;
 }

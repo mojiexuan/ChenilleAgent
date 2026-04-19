@@ -1,4 +1,3 @@
-import { toolToOpenAiClientSchema } from "@/tools";
 import {
   ChatResult,
   ChatModel,
@@ -6,6 +5,7 @@ import {
   ChatToolCall,
   Message,
   SystemPrompt,
+  Tool,
 } from "@/types";
 import OpenAI from "openai";
 import { Stream } from "openai/core/streaming";
@@ -59,24 +59,24 @@ class OpenAiModel {
           max_tokens: options.max_tokens ?? 1024,
           ...(options.jsonSchema
             ? {
-                response_format: {
-                  type: "json_schema",
-                  json_schema: {
-                    name: "response",
-                    schema: z.toJSONSchema(options.jsonSchema),
-                  },
+              response_format: {
+                type: "json_schema",
+                json_schema: {
+                  name: "response",
+                  schema: z.toJSONSchema(options.jsonSchema),
                 },
-              }
+              },
+            }
             : {}),
           ...(options.tools
             ? {
-                tools: await Promise.all(
-                  options.tools.map(
-                    async (tool) => await toolToOpenAiClientSchema(tool),
-                  ),
+              tools: await Promise.all(
+                options.tools.map(
+                  async (tool) => await this.toolToOpenAiClientSchema(tool),
                 ),
-                tool_choice: "auto",
-              }
+              ),
+              tool_choice: "auto",
+            }
             : {}),
           enable_thinking: false,
         } as ChatCompletionCreateParams,
@@ -89,8 +89,8 @@ class OpenAiModel {
           result.message.content = text || "";
           result.finished = true;
           const toolCalls = (stream as OpenAI.Chat.Completions.ChatCompletion)
-            .choices?.[0]?.message?.tool_calls;
-          if (toolCalls && toolCalls.length > 0) {
+            .choices?.[0]?.message?.tool_calls || [];
+          if (toolCalls.length > 0) {
             result.message.toolCalls = toolCalls.flatMap((call) => {
               if (call.type === "function") {
                 return {
@@ -157,11 +157,11 @@ class OpenAiModel {
     return [
       ...(systemPrompt
         ? [
-            {
-              role: "system",
-              content: systemPrompt.join("\n"),
-            } as OpenAI.Chat.Completions.ChatCompletionMessageParam,
-          ]
+          {
+            role: "system",
+            content: systemPrompt.join("\n"),
+          } as OpenAI.Chat.Completions.ChatCompletionMessageParam,
+        ]
         : []),
       ...messages.map((msg) => {
         if (msg.type === "system") {
@@ -176,15 +176,15 @@ class OpenAiModel {
             content: msg.message.content,
             ...(msg.message.toolCalls
               ? {
-                  tool_calls: msg.message.toolCalls.map((c) => ({
-                    id: c.id,
-                    type: "function",
-                    function: {
-                      name: c.name,
-                      arguments: c.arguments || "",
-                    },
-                  })),
-                }
+                tool_calls: msg.message.toolCalls.map((c) => ({
+                  id: c.id,
+                  type: "function",
+                  function: {
+                    name: c.name,
+                    arguments: c.arguments || "",
+                  },
+                })),
+              }
               : {}),
           } as OpenAI.Chat.Completions.ChatCompletionMessageParam;
         }
@@ -204,6 +204,24 @@ class OpenAiModel {
         throw new Error(`未知的消息类型: ${msg.type}`);
       }),
     ] as OpenAI.Chat.Completions.ChatCompletionMessageParam[];
+  }
+
+  /**
+   * 将工具转换为OpenAI客户端工具模式
+   */
+  private async toolToOpenAiClientSchema(
+    tool: Tool,
+  ): Promise<OpenAI.Chat.Completions.ChatCompletionTool> {
+    const description = (await tool.prompt({ tools: [] })) || "";
+    const schema: OpenAI.Chat.Completions.ChatCompletionTool = {
+      type: "function",
+      function: {
+        name: tool.name,
+        description,
+        parameters: tool.inputSchema.toJSONSchema(),
+      },
+    };
+    return schema;
   }
 }
 
