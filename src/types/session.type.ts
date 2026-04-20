@@ -16,5 +16,5 @@ export interface SessionOption extends SessionDataBase {
   /**
    * 加载会话数据
    */
-  load?: (sessionId: SessionId) => Promise<SessionData>;
+  load?: (sessionId: SessionId) => Promise<SessionData | null | undefined>;
 }

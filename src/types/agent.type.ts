@@ -1,7 +1,7 @@
 import { Session } from "@/session";
 import { ChatModel, ChatRequest } from "./model.type";
 
-export interface Agent {
+export interface AgentOption {
   name: string;
   description: string;
   model: ChatModel;

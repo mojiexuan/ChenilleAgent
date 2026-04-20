@@ -17,11 +17,7 @@ class Session {
   constructor(options?: SessionOption) {
     if (options) {
       this.state = options;
-      if (options.load) {
-        options.load(this.state.sessionId).then((res) => {
-          this.data = res;
-        });
-      }
+      this.load();
     } else {
       this.state = {
         sessionId: this.data.sessionId,
@@ -68,17 +64,28 @@ class Session {
   }
 
   /**
-   * 保存会话数据
+   * 导出会话数据
    */
-  save(): void {
-    // 保存会话数据
+  export(): SessionData {
+    return {
+      ...this.data,
+    };
   }
 
   /**
    * 加载会话数据
    */
-  load(): void {
-    // 加载会话数据
+  async load(): Promise<void> {
+    try {
+      if (this.state.load) {
+        const data = await this.state.load(this.state.sessionId);
+        if (data) {
+          this.data = data;
+        }
+      }
+    } catch (error) {
+      console.error("加载会话数据异常", error);
+    }
   }
 }
 
