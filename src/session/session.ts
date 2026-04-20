@@ -1,5 +1,4 @@
 import {
-  ChatModel,
   Message,
   PartialSessionData,
   SessionData,
@@ -13,7 +12,7 @@ import { randomUUID } from "@/utils";
  * 会话管理
  */
 class Session {
-  private state: SessionOption;
+  private options: SessionOption;
   private data: SessionData = {
     title: undefined,
     timestamp: Date.now(),
@@ -24,10 +23,10 @@ class Session {
 
   constructor(options?: SessionOption) {
     if (options) {
-      this.state = options;
+      this.options = options;
       this.load();
     } else {
-      this.state = {
+      this.options = {
         sessionId: this.data.sessionId,
         parentSessionId: this.data.parentSessionId,
       };
@@ -54,21 +53,21 @@ class Session {
    * @param sessionId 会话ID
    */
   switchSession(sessionId: SessionId): void {
-    this.state.sessionId = sessionId;
+    this.options.sessionId = sessionId;
   }
 
   /**
    * 获取会话ID
    */
   getSessionId(): SessionId {
-    return this.state.sessionId;
+    return this.options.sessionId;
   }
 
   /**
    * 获取父会话ID
    */
   getParentSessionId(): SessionId | undefined {
-    return this.state.parentSessionId;
+    return this.options.parentSessionId;
   }
 
   /**
@@ -107,8 +106,8 @@ class Session {
    */
   async load(): Promise<void> {
     try {
-      if (this.state.load) {
-        const data = await this.state.load(this.state.sessionId);
+      if (this.options.load) {
+        const data = await this.options.load(this.options.sessionId);
         if (data) {
           this.data = data;
         }
@@ -123,8 +122,8 @@ class Session {
    */
   async save(data: PartialSessionData | SessionMessage): Promise<void> {
     try {
-      if (this.state.save) {
-        await this.state.save(data);
+      if (this.options.save) {
+        await this.options.save(data);
       }
     } catch (error) {
       console.error("保存会话数据异常", error);

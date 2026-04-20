@@ -27,7 +27,7 @@ export type ChatBaseRequest = {
   onAbort?: AiAbort;
 };
 
-export type AiChunk = (chunk: ChatResult) => void;
+export type ChatChunk = (chunk: ChatResult) => void;
 
 /**
  * 流式输出请求参数
@@ -35,7 +35,7 @@ export type AiChunk = (chunk: ChatResult) => void;
 export type ChatStreamRequest = ChatBaseRequest & {
   stream: true; // 是否开启流式输出（可选）
   jsonSchema?: never;
-  onChunk?: AiChunk; // 流式输出回调（可选）
+  onChunk?: ChatChunk; // 流式输出回调（可选）
 };
 
 /**
