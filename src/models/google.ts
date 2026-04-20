@@ -1,23 +1,25 @@
 import { ChatModel, ChatRequest, ChatResult, ChatToolCall, Message, SystemPrompt, Tool } from "@/types";
 import { Content, GoogleGenAI, FunctionDeclaration } from "@google/genai";
+import { AiModel } from "./base.model";
 
 /**
  * Google模型
  */
-class GoogleModel {
+class GoogleModel extends AiModel {
     private client: GoogleGenAI;
-    private model: ChatModel & { model: string; baseURL: string };
+    private config: ChatModel & { model: string; baseURL: string };
 
-    constructor(init: ChatModel) {
-        this.model = {
+    constructor(model: ChatModel) {
+        super(model);
+        this.config = {
             baseURL: "https://api.openai.com/v1",
             model: "gpt-5",
-            ...init,
+            ...model,
         };
         this.client = new GoogleGenAI({
-            apiKey: this.model.apiKey,
+            apiKey: this.config.apiKey,
             httpOptions: {
-                baseUrl: this.model.baseURL,
+                baseUrl: this.config.baseURL,
             }
         });
     }
@@ -41,7 +43,7 @@ class GoogleModel {
         // 立即把 abort 暴露给外层
         options.onAbort?.(abortSignal);
         return this.client.models.generateContent({
-            model: this.model.model,
+            model: this.config.model,
             contents: this.buildContents(options.messages, options.systemPrompt),
             config: {
                 ...(options.tools ? {

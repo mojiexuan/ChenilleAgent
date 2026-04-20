@@ -3,8 +3,7 @@ import type { SystemPrompt } from "./prompt.type";
 import { AssistantMessage, Message } from "./message.type";
 import { Tools } from "./tool.type";
 import { AiAbort } from "./ai.type";
-
-export type AIProvider = "openai" | "google";
+import { AIProvider } from "@/enumeration";
 
 /**
  * 聊天模型

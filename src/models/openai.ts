@@ -11,23 +11,25 @@ import OpenAI from "openai";
 import { Stream } from "openai/core/streaming";
 import { ChatCompletionCreateParams } from "openai/resources/index";
 import z from "zod/v4";
+import { AiModel } from "./base.model";
 
 /**
  * OpenAI 模型
  */
-class OpenAiModel {
+class OpenAiModel extends AiModel {
   private client: OpenAI;
-  private model: ChatModel & { model: string; baseURL: string };
+  private config: ChatModel & { model: string; baseURL: string };
 
-  constructor(init: ChatModel) {
-    this.model = {
+  constructor(model: ChatModel) {
+    super(model);
+    this.config = {
       baseURL: "https://api.openai.com/v1",
       model: "gpt-5",
-      ...init,
+      ...model,
     };
     this.client = new OpenAI({
-      baseURL: this.model.baseURL,
-      apiKey: this.model.apiKey,
+      baseURL: this.config.baseURL,
+      apiKey: this.config.apiKey,
     });
   }
 
@@ -52,7 +54,7 @@ class OpenAiModel {
     return this.client.chat.completions
       .create(
         {
-          model: this.model.model,
+          model: this.config.model,
           messages: this.buildMessages(options.messages, options.systemPrompt),
           stream: options.stream ?? false,
           temperature: options.temperature ?? 0.7,

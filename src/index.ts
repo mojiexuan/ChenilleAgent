@@ -1,14 +1,13 @@
 import "@/bootstrap";
 import { ClientService } from "@/services";
 import { config } from "./config";
+import { AIProvider } from "./enumeration";
 
 const clientService = new ClientService();
 
-
-
 async function main() {
   await clientService.chat({
-    provider: "openai",
+    provider: AIProvider.OpenAI,
     apiKey: config.OPENAI_API_KEY,
     baseURL: config.OPENAI_API_BASE,
     model: config.OPENAI_API_MODEL,
