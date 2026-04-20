@@ -1,4 +1,12 @@
-import { Message, SessionData, SessionId, SessionOption } from "@/types";
+import {
+  ChatModel,
+  Message,
+  PartialSessionData,
+  SessionData,
+  SessionId,
+  SessionMessage,
+  SessionOption,
+} from "@/types";
 import { randomUUID } from "@/utils";
 
 /**
@@ -13,6 +21,7 @@ class Session {
     sessionId: randomUUID() as SessionId,
     parentSessionId: undefined,
   };
+  private model: ChatModel | undefined;
 
   constructor(options?: SessionOption) {
     if (options) {
@@ -73,6 +82,13 @@ class Session {
   }
 
   /**
+   * 转换为JSON字符串
+   */
+  toJSON(): string {
+    return JSON.stringify(this.export());
+  }
+
+  /**
    * 加载会话数据
    */
   async load(): Promise<void> {
@@ -85,6 +101,19 @@ class Session {
       }
     } catch (error) {
       console.error("加载会话数据异常", error);
+    }
+  }
+
+  /**
+   * 保存会话数据
+   */
+  async save(data: PartialSessionData | SessionMessage): Promise<void> {
+    try {
+      if (this.state.save) {
+        await this.state.save(data);
+      }
+    } catch (error) {
+      console.error("保存会话数据异常", error);
     }
   }
 }
