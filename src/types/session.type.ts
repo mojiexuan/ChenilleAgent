@@ -10,7 +10,7 @@ export interface SessionDataBase {
  * 会话数据
  */
 export interface SessionData extends SessionDataBase {
-  title: string; // 会话标题
+  title?: string; // 会话标题
   timestamp: number; // 会话创建时间戳
   messages: Message[]; // 会话消息
 }

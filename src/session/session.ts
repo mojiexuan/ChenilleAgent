@@ -15,13 +15,12 @@ import { randomUUID } from "@/utils";
 class Session {
   private state: SessionOption;
   private data: SessionData = {
-    title: "",
+    title: undefined,
     timestamp: Date.now(),
     messages: [],
     sessionId: randomUUID() as SessionId,
     parentSessionId: undefined,
   };
-  private model: ChatModel | undefined;
 
   constructor(options?: SessionOption) {
     if (options) {
@@ -70,6 +69,21 @@ class Session {
    */
   getParentSessionId(): SessionId | undefined {
     return this.state.parentSessionId;
+  }
+
+  /**
+   * 获取会话标题
+   */
+  getTitle(): string | undefined {
+    return this.data.title;
+  }
+
+  /**
+   * 设置会话标题
+   * @param title 会话标题
+   */
+  setTitle(title: string): void {
+    this.data.title = title;
   }
 
   /**
