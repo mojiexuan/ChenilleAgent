@@ -9,6 +9,7 @@ export interface AgentOption {
   description: string;
   model: ChatModel;
   session?: Session;
+  options?: Omit<ChatRequest, "systemPrompt" | "messages">;
 }
 
 /**
