@@ -9,7 +9,7 @@ import {
 } from "@/types";
 import OpenAI from "openai";
 import { Stream } from "openai/core/streaming";
-import { ChatCompletionCreateParams } from "openai/resources/index";
+import { ChatCompletionCreateParams, ReasoningEffort } from "openai/resources/index";
 import z from "zod/v4";
 import { AiModel } from "./base.model";
 
@@ -24,7 +24,7 @@ class OpenAiModel extends AiModel {
     super(model);
     this.config = {
       baseURL: "https://api.openai.com/v1",
-      model: "gpt-5",
+      model: "gpt-5.5",
       ...model,
     };
     this.client = new OpenAI({
@@ -80,7 +80,15 @@ class OpenAiModel extends AiModel {
               tool_choice: "auto",
             }
             : {}),
-          enable_thinking: false,
+          ...(options.reasoning ? {
+            reasoning_effort: options.reasoning.effort as ReasoningEffort,
+            extra_body: {
+              thinking: {
+                type: options.reasoning.effort === "none" ? "disabled" : "enabled",
+              }, // deepseek 思考参数 // 火山引擎思考参数 // kimi 思考参数
+              enable_thinking: options.reasoning.effort !== "none", // 千问开启思考
+            } // 兼容参数
+          } : {}),
         } as ChatCompletionCreateParams,
         { signal: controller.signal },
       )

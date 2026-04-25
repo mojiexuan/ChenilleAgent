@@ -24,10 +24,18 @@ export type ChatBaseRequest = {
   tools?: Tools; // 工具（可选）
   temperature?: number; // 温度（可选）
   max_tokens?: number; // 最大token（可选）
+  reasoning?: ChatReasoningRequest; // 思考请求参数（可选）
   onAbort?: AiAbort;
 };
 
 export type ChatChunk = (chunk: ChatResult) => void;
+
+/**
+ * 思考请求参数
+ */
+export type ChatReasoningRequest = {
+  effort: "none" | "minimal" | "low" | "medium" | "high" | "xhigh";
+}
 
 /**
  * 流式输出请求参数

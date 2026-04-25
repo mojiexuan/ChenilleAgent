@@ -12,8 +12,8 @@ class GoogleModel extends AiModel {
     constructor(model: ChatModel) {
         super(model);
         this.config = {
-            baseURL: "https://api.openai.com/v1",
-            model: "gpt-5",
+            baseURL: "https://generativelanguage.googleapis.com/v1beta",
+            model: "gemini-3.1-pro-preview",
             ...model,
         };
         this.client = new GoogleGenAI({
